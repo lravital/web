@@ -8,8 +8,13 @@ const SITE_DATA = {
           "name": "General Resources",
           "links": [
             {
-              "name": "מערכת הדם סרטון סיכום קצר",
+              "name": "מערכת הדם - סרטון סיכום קצר",
               "url": "https://www.youtube.com/watch?v=u1LQKm-pKFE",
+              "description": ""
+            },
+            {
+              "name": "מערכת הדם הסבר",
+              "url": "https://www.youtube.com/watch?v=1wpu6kbfG50",
               "description": ""
             }
           ]
