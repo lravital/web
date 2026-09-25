@@ -1,29 +1,8 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>My Teaching Resources</title>
-<style>
-body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#20242a}header{background:#315f8f;color:#fff;padding:28px 18px;text-align:center}h1{margin:0 0 7px}.wrap{max-width:1000px;margin:25px auto;padding:0 16px}.grades{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}.gradebtn{border:0;border-radius:9px;padding:11px 17px;background:#e2eaf3;cursor:pointer;font-size:16px}.gradebtn.active{background:#315f8f;color:white}.panel{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px #00000012}.category{margin:0 0 22px}.category h2{font-size:20px;margin:0 0 10px;border-bottom:1px solid #e5e9ef;padding-bottom:8px}.link{display:block;text-decoration:none;color:#164e80;background:#eef5fb;border-radius:9px;padding:13px 15px;margin:8px 0}.link strong{display:block;font-size:17px}.desc{display:block;color:#5c6570;font-size:14px;margin-top:4px}.empty{color:#777;font-style:italic}.error{padding:20px;color:#a00}
-</style>
-</head><body>
-<header><h1 id="title">My Teaching Resources</h1><div>Science resources and useful links</div></header>
-<div class="wrap"><div id="grades" class="grades"></div><div id="content" class="panel"></div></div>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Teaching Resources</title>
+<style>*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f9;color:#20252b}header{background:#315f8f;color:#fff;padding:28px 18px;text-align:center}h1{margin:0 0 8px}header p{margin:0;opacity:.9}main{max-width:1050px;margin:24px auto;padding:0 16px 50px}.search{position:sticky;top:0;z-index:5;background:#f4f6f9;padding:10px 0}.search input{width:100%;padding:15px 18px;border:1px solid #ccd3db;border-radius:10px;font-size:17px;background:#fff}.grade{background:#fff;border-radius:14px;margin:18px 0;box-shadow:0 2px 10px #0001;overflow:hidden}.grade-title{padding:18px 20px;font-size:23px;font-weight:700}.grade-body{padding:0 20px 20px}.category{margin-top:15px;border-top:1px solid #e5e8ec;padding-top:15px}.category h3{margin:0 0 10px;font-size:18px}.link{display:block;text-decoration:none;color:#174d7d;background:#eef5fb;border-radius:9px;padding:14px 16px;margin:9px 0}.link:hover{background:#e0edf8}.link-title{font-size:17px;font-weight:700}.desc{display:block;color:#59636e;font-size:14px;margin-top:5px}.no-results{text-align:center;background:#fff;padding:30px;border-radius:12px;color:#666}</style></head><body>
+<header><h1 id="title">My Teaching Resources</h1><p>Science resources and useful links</p></header><main><div class="search"><input id="search" type="search" placeholder="Search resources, topics, grades or descriptions…"></div><div id="app"></div></main>
 <script src="data.js"></script><script>
-const data=RESOURCE_DATA; let selected=0;
-function render(){
- document.title=data.siteTitle||'My Teaching Resources'; document.getElementById('title').textContent=data.siteTitle||'My Teaching Resources';
- const gb=document.getElementById('grades'); gb.innerHTML='';
- data.grades.forEach((g,i)=>{const b=document.createElement('button');b.className='gradebtn '+(i===selected?'active':'');b.textContent=g.name;b.onclick=()=>{selected=i;render()};gb.appendChild(b)});
- const g=data.grades[selected]; const c=document.getElementById('content');
- if(!g){c.innerHTML='<div class="empty">No grades yet.</div>';return}
- c.innerHTML='<h2 style="margin-top:0">'+esc(g.name)+'</h2>';
- g.categories.forEach(cat=>{let html='<section class="category"><h2>'+esc(cat.name)+'</h2>';
- if(!cat.links.length) html+='<div class="empty">No resources in this category yet.</div>';
- cat.links.forEach(l=>{html+='<a class="link" href="'+attr(l.url)+'" target="_blank" rel="noopener"><strong>'+esc(l.name)+'</strong>'+(l.description?'<span class="desc">'+esc(l.description)+'</span>':'')+'</a>'});
- html+='</section>';c.insertAdjacentHTML('beforeend',html)})
-}
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function attr(s){return esc(s).replace(/javascript:/gi,'')}
-render();
-</script></body></html>
+(function(){const app=document.getElementById('app'), search=document.getElementById('search'); if(typeof SITE_DATA==='undefined'){app.innerHTML='<div class="no-results">The resource data could not be loaded. Please make sure data.js is uploaded beside index.html.</div>';return;} document.getElementById('title').textContent=SITE_DATA.siteTitle||'My Teaching Resources';
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function render(q=''){q=q.trim().toLowerCase();app.innerHTML='';let count=0;(SITE_DATA.grades||[]).forEach(g=>{const gm=(g.name||'').toLowerCase().includes(q);let cats=[];(g.categories||[]).forEach(c=>{const links=(c.links||[]).filter(l=>!q||gm||(c.name||'').toLowerCase().includes(q)||(l.name||'').toLowerCase().includes(q)||(l.description||'').toLowerCase().includes(q)||(l.url||'').toLowerCase().includes(q));if(links.length)cats.push({c,links});});if(!cats.length)return;const sec=document.createElement('section');sec.className='grade';sec.innerHTML='<div class="grade-title">'+esc(g.name)+'</div><div class="grade-body"></div>';const body=sec.querySelector('.grade-body');cats.forEach(({c,links})=>{const cat=document.createElement('div');cat.className='category';cat.innerHTML='<h3>'+esc(c.name)+'</h3>';links.forEach(l=>{count++;const a=document.createElement('a');a.className='link';a.href=l.url;a.target='_blank';a.rel='noopener';a.innerHTML='<span class="link-title">'+esc(l.name)+'</span>'+(l.description?'<span class="desc">'+esc(l.description)+'</span>':'');cat.appendChild(a);});body.appendChild(cat);});app.appendChild(sec);});if(!count)app.innerHTML='<div class="no-results">No matching resources found.</div>';}
+search.addEventListener('input',()=>render(search.value));render();})();</script></body></html>
