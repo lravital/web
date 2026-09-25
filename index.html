@@ -4,50 +4,16 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>My Teaching Resources</title>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#20242a}header{background:#315f8f;color:#fff;padding:28px 18px;text-align:center}h1{margin:0 0 7px}.wrap{max-width:1000px;margin:25px auto;padding:0 16px}.search{margin-bottom:16px}.search input{width:100%;padding:14px 16px;border:1px solid #ccd5df;border-radius:10px;font-size:17px;box-sizing:border-box}.noresults{padding:25px;text-align:center;color:#666}.grades{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}.gradebtn{border:0;border-radius:9px;padding:11px 17px;background:#e2eaf3;cursor:pointer;font-size:16px}.gradebtn.active{background:#315f8f;color:white}.panel{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px #00000012}.category{margin:0 0 22px}.category h2{font-size:20px;margin:0 0 10px;border-bottom:1px solid #e5e9ef;padding-bottom:8px}.link{display:block;text-decoration:none;color:#164e80;background:#eef5fb;border-radius:9px;padding:13px 15px;margin:8px 0}.link strong{display:block;font-size:17px}.desc{display:block;color:#5c6570;font-size:14px;margin-top:4px}.empty{color:#777;font-style:italic}.error{padding:20px;color:#a00}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#20242a}header{background:#315f8f;color:#fff;padding:28px 18px;text-align:center}h1{margin:0 0 7px}.wrap{max-width:1000px;margin:25px auto;padding:0 16px}.grades{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}.gradebtn{border:0;border-radius:9px;padding:11px 17px;background:#e2eaf3;cursor:pointer;font-size:16px}.gradebtn.active{background:#315f8f;color:white}.panel{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px #00000012}.category{margin:0 0 22px}.category h2{font-size:20px;margin:0 0 10px;border-bottom:1px solid #e5e9ef;padding-bottom:8px}.link{display:block;text-decoration:none;color:#164e80;background:#eef5fb;border-radius:9px;padding:13px 15px;margin:8px 0}.link strong{display:block;font-size:17px}.desc{display:block;color:#5c6570;font-size:14px;margin-top:4px}.empty{color:#777;font-style:italic}.error{padding:20px;color:#a00}
 </style>
 </head><body>
 <header><h1 id="title">My Teaching Resources</h1><div>Science resources and useful links</div></header>
-<div class="wrap"><div class="search"><input id="search" type="search" placeholder="Search all resources, topics, grades or descriptions…"></div><div id="grades" class="grades"></div><div id="content" class="panel"></div></div>
+<div class="wrap"><div id="grades" class="grades"></div><div id="content" class="panel"></div></div>
 <script src="data.js"></script><script>
 const data=RESOURCE_DATA; let selected=0;
-const search=document.getElementById('search');
 function render(){
  document.title=data.siteTitle||'My Teaching Resources'; document.getElementById('title').textContent=data.siteTitle||'My Teaching Resources';
- const q=(search.value||'').trim().toLowerCase();
  const gb=document.getElementById('grades'); gb.innerHTML='';
- if(q){
-   data.grades.forEach((g,i)=>{
-     const gradeText=(g.name||'').toLowerCase();
-     const matches=[];
-     (g.categories||[]).forEach(cat=>{
-       (cat.links||[]).forEach(l=>{
-         const hay=[g.name,cat.name,l.name,l.description,l.url].join(' ').toLowerCase();
-         if(hay.includes(q)) matches.push({cat,l});
-       });
-     });
-     if(!matches.length && !gradeText.includes(q)) return;
-     const b=document.createElement('button'); b.className='gradebtn'; b.textContent=g.name;
-     b.onclick=()=>{selected=i; search.value=''; render()}; gb.appendChild(b);
-   });
-   const c=document.getElementById('content'); c.innerHTML=''; let total=0;
-   data.grades.forEach(g=>{
-     const gradeText=(g.name||'').toLowerCase();
-     let sections=[];
-     (g.categories||[]).forEach(cat=>{
-       const links=(cat.links||[]).filter(l=>{const hay=[g.name,cat.name,l.name,l.description,l.url].join(' ').toLowerCase();return hay.includes(q)});
-       if(links.length || gradeText.includes(q)) sections.push({cat,links:gradeText.includes(q)&&!links.length?(cat.links||[]):links});
-     });
-     if(!sections.length && gradeText.includes(q)) sections=(g.categories||[]).map(cat=>({cat,links:cat.links||[]}));
-     if(!sections.length)return;
-     total+=sections.reduce((n,x)=>n+x.links.length,0);
-     let html='<section class="category"><h2>'+esc(g.name)+'</h2>';
-     sections.forEach(x=>{html+='<h3>'+esc(x.cat.name)+'</h3>'; x.links.forEach(l=>{html+='<a class="link" href="'+attr(l.url)+'" target="_blank" rel="noopener"><strong>'+esc(l.name)+'</strong>'+(l.description?'<span class="desc">'+esc(l.description)+'</span>':'')+'</a>'})});
-     html+='</section>'; c.insertAdjacentHTML('beforeend',html);
-   });
-   if(!total && !data.grades.some(g=>(g.name||'').toLowerCase().includes(q))) c.innerHTML='<div class="noresults">No matching resources found.</div>';
-   return;
- }
  data.grades.forEach((g,i)=>{const b=document.createElement('button');b.className='gradebtn '+(i===selected?'active':'');b.textContent=g.name;b.onclick=()=>{selected=i;render()};gb.appendChild(b)});
  const g=data.grades[selected]; const c=document.getElementById('content');
  if(!g){c.innerHTML='<div class="empty">No grades yet.</div>';return}
@@ -59,5 +25,5 @@ function render(){
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function attr(s){return esc(s).replace(/javascript:/gi,'')}
-search.addEventListener('input',render); render();
+render();
 </script></body></html>
