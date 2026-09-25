@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Teaching Resources Editor</title>
+<style>body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#20242a}header{background:#315f8f;color:#fff;padding:22px;text-align:center}.wrap{max-width:1000px;margin:20px auto;padding:0 15px}.bar,.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:15px;box-shadow:0 2px 10px #0001}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}input,textarea,select{width:100%;padding:10px;border:1px solid #ccd4de;border-radius:7px;box-sizing:border-box}textarea{min-height:70px}button{border:0;border-radius:7px;padding:9px 13px;cursor:pointer;background:#315f8f;color:#fff;margin:4px}.danger{background:#b63a3a}.muted{background:#e5ebf2;color:#26384b}.item{border:1px solid #e1e6ec;border-radius:9px;padding:12px;margin:8px 0}.item small{color:#667}.actions{margin-top:7px}.notice{background:#fff5cc;padding:12px;border-radius:8px;margin-bottom:15px}.hidden{display:none}label{font-weight:bold;font-size:13px;display:block;margin-bottom:4px}</style></head>
+<body><header><h1>Teaching Resources Editor</h1><div>Edit on your own computer, then download the updated data.js and replace the data.js file on GitHub.</div></header>
+<div class="wrap">
+<div class="notice"><b>Important:</b> This editor does not require a login. It saves changes in this browser and can export your complete resource list. After downloading <b>data.js</b>, upload/replace that file in your GitHub repository to publish the changes.</div>
+<div class="bar"><label>Website title</label><input id="siteTitle"><button onclick="saveTitle()">Save title</button></div>
+<div class="bar"><h2>Grades / Classes</h2><div id="gradesList"></div><button onclick="addGrade()">+ Add grade/class</button></div>
+<div id="editor"></div>
+<div class="bar"><button onclick="downloadData()">⬇ Download updated data.js</button><button class="muted" onclick="downloadBackup()">⬇ Backup JSON</button><button class="muted" onclick="resetToSaved()">Reset browser changes</button></div>
+</div>
+<script src="data.js"></script><script>
+const KEY='teacherResourcesEditorData'; let data=JSON.parse(JSON.stringify(RESOURCE_DATA));
+const saved=localStorage.getItem(KEY); if(saved){try{data=JSON.parse(saved)}catch(e){}}
+let selectedGrade=0;
+function persist(){localStorage.setItem(KEY,JSON.stringify(data))}
+function uid(p){return p+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function render(){document.getElementById('siteTitle').value=data.siteTitle||'';const gl=document.getElementById('gradesList');gl.innerHTML='';data.grades.forEach((g,i)=>{const d=document.createElement('div');d.className='item';d.innerHTML='<b>'+esc(g.name)+'</b> <button onclick="selectGrade('+i+')">Open</button><button class="muted" onclick="renameGrade('+i+')">Rename</button><button class="danger" onclick="deleteGrade('+i+')">Delete</button>';gl.appendChild(d)});renderGrade()}
+function selectGrade(i){selectedGrade=i;renderGrade()}
+function renderGrade(){const e=document.getElementById('editor');const g=data.grades[selectedGrade];if(!g){e.innerHTML='';return}let h='<div class="card"><h2>'+esc(g.name)+'</h2><button onclick="addCategory()">+ Add subcategory</button></div>';g.categories.forEach((c,ci)=>{h+='<div class="card"><h3>'+esc(c.name)+'</h3><button class="muted" onclick="renameCategory('+ci+')">Rename subcategory</button><button class="danger" onclick="deleteCategory('+ci+')">Delete subcategory</button><div>';
+c.links.forEach((l,li)=>{h+='<div class="item"><b>'+esc(l.name)+'</b><br><small>'+esc(l.url)+'</small>'+(l.description?'<br>'+esc(l.description):'')+'<div class="actions"><button onclick="editLink('+ci+','+li+')">Edit</button><button class="danger" onclick="deleteLink('+ci+','+li+')">Delete</button></div></div>'});h+='<button onclick="addLink('+ci+')">+ Add link</button></div></div>'});e.innerHTML=h}
+function saveTitle(){data.siteTitle=document.getElementById('siteTitle').value.trim()||'My Teaching Resources';persist();render()}
+function addGrade(){const n=prompt('Grade/class name (for example: Grade 7):');if(!n)return;data.grades.push({id:uid('grade'),name:n.trim(),categories:[{id:uid('cat'),name:'General',links:[]}]});selectedGrade=data.grades.length-1;persist();render()}
+function renameGrade(i){const n=prompt('New grade/class name:',data.grades[i].name);if(n){data.grades[i].name=n.trim();persist();render()}}
+function deleteGrade(i){if(data.grades.length===1)return alert('Keep at least one grade/class.');if(confirm('Delete this grade/class and all its links?')){data.grades.splice(i,1);selectedGrade=Math.max(0,selectedGrade-1);persist();render()}}
+function addCategory(){const n=prompt('Subcategory name (for example: Atoms, Videos, Experiments):');if(!n)return;data.grades[selectedGrade].categories.push({id:uid('cat'),name:n.trim(),links:[]});persist();render()}
+function renameCategory(ci){const c=data.grades[selectedGrade].categories[ci];const n=prompt('New subcategory name:',c.name);if(n){c.name=n.trim();persist();render()}}
+function deleteCategory(ci){if(data.grades[selectedGrade].categories.length===1)return alert('Keep at least one subcategory.');if(confirm('Delete this subcategory and all its links?')){data.grades[selectedGrade].categories.splice(ci,1);persist();render()}}
+function addLink(ci){const name=prompt('Link name:');if(!name)return;const url=prompt('URL:');if(!url)return;const description=prompt('Description (optional):')||'';data.grades[selectedGrade].categories[ci].links.push({id:uid('link'),name:name.trim(),url:url.trim(),description:description.trim()});persist();render()}
+function editLink(ci,li){const l=data.grades[selectedGrade].categories[ci].links[li];const name=prompt('Link name:',l.name);if(name===null)return;const url=prompt('URL:',l.url);if(url===null)return;const description=prompt('Description:',l.description||'');if(description===null)return;l.name=name.trim();l.url=url.trim();l.description=description.trim();persist();render()}
+function deleteLink(ci,li){if(confirm('Delete this link?')){data.grades[selectedGrade].categories[ci].links.splice(li,1);persist();render()}}
+function resetToSaved(){if(confirm('Discard browser changes and reload the original data.js?')){data=JSON.parse(JSON.stringify(RESOURCE_DATA));localStorage.removeItem(KEY);render()}}
+function downloadData(){const js='const RESOURCE_DATA = '+JSON.stringify(data,null,2)+';\n';download('data.js',js,'text/javascript')}
+function downloadBackup(){download('teacher-resources-backup.json',JSON.stringify(data,null,2),'application/json')}
+function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+render();
+</script></body></html>
